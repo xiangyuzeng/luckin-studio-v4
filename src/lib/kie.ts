@@ -344,31 +344,26 @@ export async function kieChatCompletion(
   messages: { role: string; content: ChatMessageContent }[],
   model?: string,
 ): Promise<string> {
-  const url = `${config.baseUrl}/v1/chat/completions`;
-  const { ok, status, json } = await fetchJson(
-    url,
-    {
-      method: 'POST',
-      headers: authHeaders(config.apiKey),
-      body: JSON.stringify({
-        model: model ?? 'gemini-2.5-flash',
-        messages,
-        stream: false,
-      }),
-    },
-    config.timeoutMs ?? 120_000,
-  );
+  const candidates = [
+    `${config.baseUrl}/v1/chat/completions`,
+    `${config.baseUrl}/api/v1/chat/completions`,
+    `${config.baseUrl}/api/v1/openai/chat/completions`,
+  ];
 
-  if (!ok) {
-    throw new Error(
-      `KIE chat/completions failed (${status}): ${JSON.stringify(json)}`,
-    );
-  }
+  const result = await tryEndpoints(config, candidates, {
+    method: 'POST',
+    headers: authHeaders(config.apiKey),
+    body: JSON.stringify({
+      model: model ?? 'gemini-2.5-flash',
+      messages,
+      stream: false,
+    }),
+  });
 
-  const content: string | undefined = json?.choices?.[0]?.message?.content;
+  const content: string | undefined = result.json?.choices?.[0]?.message?.content;
   if (content === undefined) {
     throw new Error(
-      `KIE chat/completions: unexpected response shape – ${JSON.stringify(json)}`,
+      `KIE chat/completions: unexpected response shape – ${JSON.stringify(result.json)}`,
     );
   }
 
