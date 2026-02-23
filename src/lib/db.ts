@@ -354,6 +354,8 @@ export function getSetting(key: string): string | null {
     kie_api_key: 'KIE_API_KEY',
     kie_base_url: 'KIE_BASE_URL',
     default_model: 'DEFAULT_MODEL',
+    openai_api_key: 'OPENAI_API_KEY',
+    gemini_api_key: 'GEMINI_API_KEY',
   };
   const envKey = envMap[key];
   if (envKey && process.env[envKey]) {

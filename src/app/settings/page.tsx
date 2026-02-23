@@ -29,6 +29,10 @@ export default function SettingsPage() {
 
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [openaiApiKey, setOpenaiApiKey] = useState('');
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
   const [defaultModel, setDefaultModel] = useState<string>('veo3');
   const [defaultRatio, setDefaultRatio] = useState<AspectRatio>('9:16');
   const [defaultDuration, setDefaultDuration] = useState<Duration>('8');
@@ -38,6 +42,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setApiKey(settings.kie_api_key || '');
+      setOpenaiApiKey(settings.openai_api_key || '');
+      setGeminiApiKey(settings.gemini_api_key || '');
       setDefaultModel(settings.default_model || 'veo3');
       setDefaultRatio((settings.default_aspect_ratio as AspectRatio) || '9:16');
       setDefaultDuration((settings.default_duration as Duration) || '8');
@@ -49,6 +55,8 @@ export default function SettingsPage() {
     try {
       await updateMutation.mutateAsync({
         kie_api_key: apiKey,
+        openai_api_key: openaiApiKey,
+        gemini_api_key: geminiApiKey,
         default_model: defaultModel,
         default_aspect_ratio: defaultRatio,
         default_duration: defaultDuration,
@@ -125,6 +133,82 @@ export default function SettingsPage() {
               {locale === 'cn'
                 ? '用于 KIE.AI 视频生成网关的全局 API 密钥'
                 : 'Global API key used for the KIE.AI video generation gateway'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* OpenAI API Key */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('settings.openai_api_key')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type={showOpenaiKey ? 'text' : 'password'}
+                  value={openaiApiKey}
+                  onChange={(e) => setOpenaiApiKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                >
+                  {showOpenaiKey ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {locale === 'cn'
+                ? '用于 AI 提示词生成，可选 (优先级最高)'
+                : 'For AI prompt generation, optional (highest priority)'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Gemini API Key */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t('settings.gemini_api_key')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type={showGeminiKey ? 'text' : 'password'}
+                  value={geminiApiKey}
+                  onChange={(e) => setGeminiApiKey(e.target.value)}
+                  placeholder="AIza..."
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  onClick={() => setShowGeminiKey(!showGeminiKey)}
+                >
+                  {showGeminiKey ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {locale === 'cn'
+                ? '用于 AI 提示词生成，可选 (第二优先级)'
+                : 'For AI prompt generation, optional (second priority)'}
             </p>
           </CardContent>
         </Card>

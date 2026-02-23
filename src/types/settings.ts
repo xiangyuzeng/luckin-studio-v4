@@ -4,6 +4,8 @@ export interface AppSettings {
   default_duration: string;
   locale: string;
   kie_api_key?: string;
+  openai_api_key?: string;
+  gemini_api_key?: string;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {

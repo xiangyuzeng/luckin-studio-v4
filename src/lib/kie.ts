@@ -13,6 +13,8 @@
  *    {@link KieConfig} so the caller controls credentials and base URL.
  */
 
+import { getSetting } from '@/lib/db';
+
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
@@ -344,30 +346,71 @@ export async function kieChatCompletion(
   messages: { role: string; content: ChatMessageContent }[],
   model?: string,
 ): Promise<string> {
-  const candidates = [
-    `${config.baseUrl}/v1/chat/completions`,
-    `${config.baseUrl}/api/v1/chat/completions`,
-    `${config.baseUrl}/api/v1/openai/chat/completions`,
-  ];
+  const timeoutMs = config.timeoutMs ?? 120_000;
 
-  const result = await tryEndpoints(config, candidates, {
-    method: 'POST',
-    headers: authHeaders(config.apiKey),
-    body: JSON.stringify({
-      model: model ?? 'gemini-2.5-flash',
-      messages,
-      stream: false,
-    }),
-  });
+  // Helper to extract content from OpenAI-compatible response
+  const extractContent = (json: any): string | undefined =>
+    json?.choices?.[0]?.message?.content;
 
-  const content: string | undefined = result.json?.choices?.[0]?.message?.content;
-  if (content === undefined) {
-    throw new Error(
-      `KIE chat/completions: unexpected response shape – ${JSON.stringify(result.json)}`,
+  // Provider 1: OpenAI direct
+  const openaiKey = getSetting('openai_api_key');
+  if (openaiKey) {
+    const result = await fetchJson(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: authHeaders(openaiKey),
+        body: JSON.stringify({ model: model ?? 'gpt-4o-mini', messages, stream: false }),
+      },
+      timeoutMs,
     );
+    if (result.ok) {
+      const content = extractContent(result.json);
+      if (content !== undefined) return content;
+    }
   }
 
-  return content;
+  // Provider 2: Gemini direct (OpenAI-compatible endpoint)
+  const geminiKey = getSetting('gemini_api_key');
+  if (geminiKey) {
+    const result = await fetchJson(
+      'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      {
+        method: 'POST',
+        headers: authHeaders(geminiKey),
+        body: JSON.stringify({ model: model ?? 'gemini-2.5-flash', messages, stream: false }),
+      },
+      timeoutMs,
+    );
+    if (result.ok) {
+      const content = extractContent(result.json);
+      if (content !== undefined) return content;
+    }
+  }
+
+  // Provider 3: KIE gateway fallback
+  if (config.apiKey) {
+    const candidates = [
+      `${config.baseUrl}/v1/chat/completions`,
+      `${config.baseUrl}/api/v1/chat/completions`,
+      `${config.baseUrl}/api/v1/openai/chat/completions`,
+    ];
+    try {
+      const result = await tryEndpoints(config, candidates, {
+        method: 'POST',
+        headers: authHeaders(config.apiKey),
+        body: JSON.stringify({ model: model ?? 'gemini-2.5-flash', messages, stream: false }),
+      });
+      const content = extractContent(result.json);
+      if (content !== undefined) return content;
+    } catch {
+      // fall through to error
+    }
+  }
+
+  throw new Error(
+    'No working AI provider for chat completions. Set OPENAI_API_KEY or GEMINI_API_KEY in Settings or environment variables.',
+  );
 }
 
 // ---------------------------------------------------------------------------

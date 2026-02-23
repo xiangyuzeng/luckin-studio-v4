@@ -136,6 +136,8 @@ const translations = {
     // Settings
     'settings.title': 'Settings',
     'settings.api_key': 'KIE API Key',
+    'settings.openai_api_key': 'OpenAI API Key',
+    'settings.gemini_api_key': 'Gemini API Key',
     'settings.default_model': 'Default Model',
     'settings.default_ratio': 'Default Aspect Ratio',
     'settings.default_duration': 'Default Duration',
@@ -331,6 +333,8 @@ const translations = {
     // Settings
     'settings.title': '设置',
     'settings.api_key': 'KIE API 密钥',
+    'settings.openai_api_key': 'OpenAI API 密钥',
+    'settings.gemini_api_key': 'Gemini API 密钥',
     'settings.default_model': '默认模型',
     'settings.default_ratio': '默认画面比例',
     'settings.default_duration': '默认时长',
