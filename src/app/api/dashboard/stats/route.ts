@@ -17,9 +17,12 @@ export async function GET() {
     });
   } catch (error) {
     console.error('GET /api/dashboard/stats error:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch stats' },
-      { status: 500 },
-    );
+    // Gracefully degrade — return zeros instead of 500
+    return NextResponse.json({
+      totalPrompts: 0,
+      activeTasks: 0,
+      completedToday: 0,
+      totalAccounts: 0,
+    });
   }
 }

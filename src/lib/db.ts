@@ -13,7 +13,11 @@ let _db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (_db) return _db;
 
-  const dbDir = path.join(process.cwd(), 'data');
+  // Vercel serverless: /tmp is the only writable directory
+  const isVercel = !!process.env.VERCEL;
+  const dbDir = isVercel
+    ? '/tmp/data'
+    : path.join(process.cwd(), 'data');
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
@@ -345,6 +349,17 @@ export function deleteAccount(id: string): void {
 // ---------------------------------------------------------------------------
 
 export function getSetting(key: string): string | null {
+  // Environment variable override (critical for Vercel where DB is ephemeral)
+  const envMap: Record<string, string> = {
+    kie_api_key: 'KIE_API_KEY',
+    kie_base_url: 'KIE_BASE_URL',
+    default_model: 'DEFAULT_MODEL',
+  };
+  const envKey = envMap[key];
+  if (envKey && process.env[envKey]) {
+    return process.env[envKey]!;
+  }
+
   const db = getDb();
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined;
   return row?.value ?? null;
