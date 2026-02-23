@@ -14,7 +14,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Coffee,
   Clapperboard,
   Layers,
   Grid2X2,
@@ -75,15 +74,16 @@ export function Sidebar() {
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white">
-          <Coffee className="h-5 w-5" />
-        </div>
-        {sidebarOpen && (
+        {sidebarOpen ? (
           <div className="flex flex-col leading-tight">
             <span className="text-lg font-extrabold tracking-wide bg-gradient-to-r from-[#0066CC] to-[#00A0E9] bg-clip-text text-transparent">
-              LUCKIN STUDIO
+              瑞幸咖啡北美
             </span>
-            <span className="text-xs text-muted-foreground">AIGC Video Platform</span>
+            <span className="text-xs text-muted-foreground">AI视频生产平台</span>
+          </div>
+        ) : (
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white text-xs font-bold">
+            瑞幸
           </div>
         )}
       </div>
@@ -113,7 +113,7 @@ export function Sidebar() {
             )}
             <div className="space-y-0.5">
               {section.items.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/'));
+                const isActive = pathname === item.href;
                 const Icon = item.icon;
                 return (
                   <Link

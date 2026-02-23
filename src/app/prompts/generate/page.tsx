@@ -47,8 +47,8 @@ export default function GeneratePage() {
       setResults(data.prompts);
       setSavedIds(new Set());
       toast.success(`Generated ${data.prompts.length} prompts`);
-    } catch {
-      toast.error('Failed to generate prompts');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate prompts');
     }
   };
 
